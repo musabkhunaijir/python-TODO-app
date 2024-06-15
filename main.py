@@ -38,4 +38,11 @@ def register(login_dto: LoginUserDto, db: Session = Depends(get_db)):
 # ** tasks APIs **
 @app.post("/v1/tasks/add/{user_id}")
 def register(user_id, add_task_dto: AddTaskDto, db: Session = Depends(get_db)):
-    return TasksService(user_id).addTask(add_task_dto, db=db)
+    return TasksService(db, user_id).addTask(
+        add_task_dto,
+    )
+
+
+@app.get("/v1/tasks/{user_id}")
+def getCurrentUserTasks(user_id, db: Session = Depends(get_db)):
+    return TasksService(db, user_id).getCurrentUserTasks()
