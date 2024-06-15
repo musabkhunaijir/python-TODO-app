@@ -8,7 +8,7 @@ from services.users import UsersService
 from DTOs.users import RegisterUserDto, LoginUserDto
 
 # TASKS
-from DTOs.tasks import AddTaskDto
+from DTOs.tasks import AddTaskDto, ModifyDto
 from services.tasks import TasksService
 
 # from models.users import UserModel
@@ -36,9 +36,9 @@ def register(login_dto: LoginUserDto, db: Session = Depends(get_db)):
 
 
 # ** tasks APIs **
-@app.post("/v1/tasks/add/{user_id}")
+@app.post("/v1/tasks/{user_id}")
 def register(user_id, add_task_dto: AddTaskDto, db: Session = Depends(get_db)):
-    return TasksService(db, user_id).addTask(
+    return TasksService(db, user_id).add(
         add_task_dto,
     )
 
@@ -46,3 +46,8 @@ def register(user_id, add_task_dto: AddTaskDto, db: Session = Depends(get_db)):
 @app.get("/v1/tasks/{user_id}")
 def getCurrentUserTasks(user_id, db: Session = Depends(get_db)):
     return TasksService(db, user_id).getCurrentUserTasks()
+
+
+@app.patch("/v1/tasks/user/{user_id}")
+def modify(user_id, modify_task_Dto: ModifyDto, db: Session = Depends(get_db)):
+    return TasksService(db, user_id).modify(modify_task_Dto)

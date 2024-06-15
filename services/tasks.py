@@ -1,10 +1,11 @@
+from sqlalchemy import and_, update
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 
-from DTOs.tasks import AddTaskDto
 from models.users import UserModel
 from models.tasks import TaskModel
+from DTOs.tasks import AddTaskDto, ModifyDto
 
 
 class TasksService:
@@ -23,19 +24,16 @@ class TasksService:
             .all()
         )
 
-    def addTask(self, add_task_dto: AddTaskDto):
+    def add(self, add_task_dto: AddTaskDto):
         # 1- check if user is already registered
-        is_user = self.getCurrentUserById()
+        is_user = self.__getCurrentUserById()
 
         if not bool(is_user):
             raise HTTPException(status_code=404, detail="user not found")
 
         # 2- get last task order id to be incremented
-        last_task = self.getLastTaskById()
+        last_task = self.__getLastTaskById()
         current_order_id = last_task.order_id + 1 if last_task else 1
-
-        print(current_order_id)
-        # return
 
         db_task = TaskModel(
             title=add_task_dto.title, user_id=self.user_id, order_id=current_order_id
@@ -46,8 +44,38 @@ class TasksService:
 
         return "created"
 
+    def modify(self, modify_task_Dto: ModifyDto):
+        # 1- check that task does exist
+        is_task = self.getOneUserTask(modify_task_Dto)
+
+        if not bool(is_task):
+            raise HTTPException(status_code=404, detail="task not found")
+
+        # update the record
+        self.db.query(TaskModel).filter(
+            and_(
+                TaskModel.id == modify_task_Dto.task_id,
+                TaskModel.user_id == self.user_id,
+            )
+        ).update({TaskModel.title: modify_task_Dto.title})
+        self.db.commit()
+
+        return "updated"
+
+    def getOneUserTask(self, modify_task_Dto):
+        return (
+            self.db.query(TaskModel)
+            .filter(
+                and_(
+                    TaskModel.id == modify_task_Dto.task_id,
+                    TaskModel.user_id == self.user_id,
+                )
+            )
+            .first()
+        )
+
     # TODO:(refactor) should be in user's domain service
-    def getCurrentUserById(self):
+    def __getCurrentUserById(self):
         return (
             self.db.query(UserModel)
             .filter(
@@ -56,11 +84,11 @@ class TasksService:
             .first()
         )
 
-    def getLastTaskById(self):
+    def __getLastTaskById(self):
         return (
             self.db.query(TaskModel)
             .filter(
-                UserModel.id == self.user_id,
+                TaskModel.user_id == self.user_id,
             )
             .order_by(TaskModel.order_id.desc())
             .first()
