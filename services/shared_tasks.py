@@ -51,6 +51,8 @@ class SharedTasksService:
         self.db.commit()
         self.db.refresh(db_shared_task)
 
+        # TODO: share task list via email
+
         return "shared"
 
     def stopSharing(self, shared_task_id: int):
