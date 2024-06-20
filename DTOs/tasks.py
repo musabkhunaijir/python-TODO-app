@@ -10,7 +10,7 @@ class ModifyDto(BaseModel):
     title: str
 
 
-class DeleteTaskDto(BaseModel):
+class UserIdDto(BaseModel):
     user_id: int
 
 

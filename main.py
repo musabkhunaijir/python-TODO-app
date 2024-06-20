@@ -9,7 +9,7 @@ from DTOs.users import RegisterUserDto, LoginUserDto
 
 # TASKS
 from services.tasks import TasksService
-from DTOs.tasks import AddTaskDto, ModifyDto, DeleteTaskDto, ReorderTasksDto
+from DTOs.tasks import AddTaskDto, ModifyDto, UserIdDto, ReorderTasksDto
 
 # from models.users import UserModel
 # from models.tasks import TaskModel
@@ -54,10 +54,15 @@ def modify(user_id, modify_task_dto: ModifyDto, db: Session = Depends(get_db)):
 
 
 @app.delete("/v1/tasks/{task_id}")
-def deleteTask(task_id, delete_task_dto: DeleteTaskDto, db: Session = Depends(get_db)):
-    return TasksService(db, delete_task_dto.user_id).delete(task_id, delete_task_dto)
+def deleteTask(task_id, delete_task_dto: UserIdDto, db: Session = Depends(get_db)):
+    return TasksService(db, delete_task_dto.user_id).delete(task_id)
 
 
 @app.patch("/v1/tasks/reorder")
 def modify(reorder_task_dto: ReorderTasksDto, db: Session = Depends(get_db)):
     return TasksService(db, reorder_task_dto.user_id).reorder(reorder_task_dto)
+
+
+@app.patch("/v1/tasks/mark-done/{task_id}")
+def markTaskDone(task_id, mark_done_dto: UserIdDto, db: Session = Depends(get_db)):
+    return TasksService(db, mark_done_dto.user_id).markDone(task_id)

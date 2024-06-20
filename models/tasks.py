@@ -1,3 +1,4 @@
+import enum
 from sqlalchemy import (
     Column,
     Integer,
@@ -6,9 +7,15 @@ from sqlalchemy import (
     text,
     ForeignKey,
     UniqueConstraint,
+    Enum,
 )
 
 from configs.database import Base
+
+
+class StatusEnum(enum.Enum):
+    todo = "TODO"
+    done = "DONE"
 
 
 class TaskModel(Base):
@@ -18,6 +25,7 @@ class TaskModel(Base):
     title = Column(String, nullable=False)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     order_id = Column(Integer, nullable=False, default=1)
+    status = Column(Enum(StatusEnum), nullable=False, default=StatusEnum.todo)
     created_at = Column(TIMESTAMP(timezone=True), server_default=text("now()"))
     updated_at = Column(TIMESTAMP(timezone=True), server_default=text("now()"))
 

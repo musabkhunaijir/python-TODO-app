@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 
 from models.users import UserModel
-from models.tasks import TaskModel
+from models.tasks import TaskModel, StatusEnum
 from DTOs.tasks import AddTaskDto, ModifyDto, ReorderTasksDto
 
 
@@ -96,6 +96,24 @@ class TasksService:
 
         return "tasks reorder"
 
+    def markDone(self, task_id: int):
+        # 1- check that task does exist
+        is_task = self.getOneUserTask(task_id)
+
+        if not bool(is_task):
+            raise HTTPException(status_code=404, detail="task not found")
+
+        # update the record
+        self.db.query(TaskModel).filter(
+            and_(
+                TaskModel.id == task_id,
+                TaskModel.user_id == self.user_id,
+            )
+        ).update({TaskModel.status: StatusEnum.done})
+        self.db.commit()
+
+        return "status updated"
+
     def updateTaskOrder(self, task):
         self.db.query(TaskModel).filter(
             and_(
@@ -112,6 +130,7 @@ class TasksService:
                 and_(
                     TaskModel.id == task_id,
                     TaskModel.user_id == self.user_id,
+                    TaskModel.status == StatusEnum.todo,
                 )
             )
             .first()
