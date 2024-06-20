@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from models.users import UserModel
 from models.tasks import TaskModel
-from DTOs.tasks import AddTaskDto, ModifyDto
+from DTOs.tasks import AddTaskDto, ModifyDto, DeleteTaskDto
 
 
 class TasksService:
@@ -46,7 +46,7 @@ class TasksService:
 
     def modify(self, modify_task_Dto: ModifyDto):
         # 1- check that task does exist
-        is_task = self.getOneUserTask(modify_task_Dto)
+        is_task = self.getOneUserTask(modify_task_Dto.task_id)
 
         if not bool(is_task):
             raise HTTPException(status_code=404, detail="task not found")
@@ -62,12 +62,30 @@ class TasksService:
 
         return "updated"
 
-    def getOneUserTask(self, modify_task_Dto):
+    def delete(self, task_id: int, delete_task_Dto: DeleteTaskDto):
+        # 1- check that task does exist
+        is_task = self.getOneUserTask(task_id)
+
+        if not bool(is_task):
+            raise HTTPException(status_code=404, detail="task not found")
+
+            # update the record
+        self.db.query(TaskModel).filter(
+            and_(
+                TaskModel.id == task_id,
+                TaskModel.user_id == self.user_id,
+            )
+        ).delete()
+        self.db.commit()
+
+        return "deleted"
+
+    def getOneUserTask(self, task_id):
         return (
             self.db.query(TaskModel)
             .filter(
                 and_(
-                    TaskModel.id == modify_task_Dto.task_id,
+                    TaskModel.id == task_id,
                     TaskModel.user_id == self.user_id,
                 )
             )
