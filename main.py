@@ -9,15 +9,17 @@ from DTOs.users import RegisterUserDto, LoginUserDto
 
 # TASKS
 from services.tasks import TasksService
+from DTOs.shared_tasks import ShareTaskDto
 from DTOs.tasks import AddTaskDto, ModifyDto, UserIdDto, ReorderTasksDto
 
-# from models.users import UserModel
-# from models.tasks import TaskModel
+# SHARED TASKS
+from services.shared_tasks import SharedTasksService
 
 
 # DB migration
 import models.users
 import models.tasks
+import models.shared_tasks
 
 Base.metadata.create_all(bind=engine, checkfirst=True)
 
@@ -66,3 +68,16 @@ def modify(reorder_task_dto: ReorderTasksDto, db: Session = Depends(get_db)):
 @app.patch("/v1/tasks/{task_id}/mark-done")
 def markTaskDone(task_id, mark_done_dto: UserIdDto, db: Session = Depends(get_db)):
     return TasksService(db, mark_done_dto.user_id).markDone(task_id)
+
+
+# ** shared tasks APIs **
+
+
+@app.get("/v1/shared-tasks/{viewer_id}")
+def getSharedTasks(viewer_id, db: Session = Depends(get_db)):
+    return SharedTasksService(db, viewer_id).getSharedTasks()
+
+
+@app.post("/v1/shared-tasks/{user_id}/share")
+def markTaskDone(user_id, share_task_dto: ShareTaskDto, db: Session = Depends(get_db)):
+    return SharedTasksService(db, user_id).share(share_task_dto)
