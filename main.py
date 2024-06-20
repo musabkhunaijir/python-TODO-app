@@ -63,6 +63,6 @@ def modify(reorder_task_dto: ReorderTasksDto, db: Session = Depends(get_db)):
     return TasksService(db, reorder_task_dto.user_id).reorder(reorder_task_dto)
 
 
-@app.patch("/v1/tasks/mark-done/{task_id}")
+@app.patch("/v1/tasks/{task_id}/mark-done")
 def markTaskDone(task_id, mark_done_dto: UserIdDto, db: Session = Depends(get_db)):
     return TasksService(db, mark_done_dto.user_id).markDone(task_id)
