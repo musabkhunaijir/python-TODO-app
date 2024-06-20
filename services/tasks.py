@@ -62,7 +62,7 @@ class TasksService:
 
         return "updated"
 
-    def delete(self, task_id: int, delete_task_Dto: DeleteTaskDto):
+    def delete(self, task_id: int):
         # 1- check that task does exist
         is_task = self.getOneUserTask(task_id)
 
