@@ -79,5 +79,10 @@ def getSharedTasks(viewer_id, db: Session = Depends(get_db)):
 
 
 @app.post("/v1/shared-tasks/{user_id}/share")
-def markTaskDone(user_id, share_task_dto: ShareTaskDto, db: Session = Depends(get_db)):
+def shareTask(user_id, share_task_dto: ShareTaskDto, db: Session = Depends(get_db)):
     return SharedTasksService(db, user_id).share(share_task_dto)
+
+
+@app.delete("/v1/shared-tasks/{shared_task_id}")
+def stopSharing(shared_task_id: int, db: Session = Depends(get_db)):
+    return SharedTasksService(db).stopSharing(shared_task_id)

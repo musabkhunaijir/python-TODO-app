@@ -1,4 +1,4 @@
-from sqlalchemy import and_, update
+from sqlalchemy import and_
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
@@ -69,7 +69,7 @@ class TasksService:
         if not bool(is_task):
             raise HTTPException(status_code=404, detail="task not found")
 
-            # update the record
+        # delete the record
         self.db.query(TaskModel).filter(
             and_(
                 TaskModel.id == task_id,

@@ -1,3 +1,4 @@
+from fastapi import HTTPException
 from sqlalchemy.orm import Session, joinedload
 
 
@@ -8,7 +9,7 @@ from DTOs.shared_tasks import ShareTaskDto
 
 
 class SharedTasksService:
-    def __init__(self, db: Session, user_id):
+    def __init__(self, db: Session, user_id=None):
         self.db = db
         self.user_id = user_id
 
@@ -51,3 +52,26 @@ class SharedTasksService:
         self.db.refresh(db_shared_task)
 
         return "shared"
+
+    def stopSharing(self, shared_task_id: int):
+        # 1- TODO: check that req is made by the task owner
+
+        is_shared_task = self.isSharedTask(shared_task_id)
+        if not bool(is_shared_task):
+            raise HTTPException(status_code=404, detail="shared task not found")
+
+        self.db.query(SharedTasksModel).filter(
+            SharedTasksModel.id == shared_task_id,
+        ).delete()
+        self.db.commit()
+
+        return "delete"
+
+    def isSharedTask(self, shared_task_id):
+        return (
+            self.db.query(SharedTasksModel)
+            .filter(
+                SharedTasksModel.id == shared_task_id,
+            )
+            .first()
+        )
