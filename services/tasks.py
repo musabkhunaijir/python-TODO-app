@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from models.users import UserModel
 from models.tasks import TaskModel
-from DTOs.tasks import AddTaskDto, ModifyDto, DeleteTaskDto
+from DTOs.tasks import AddTaskDto, ModifyDto, ReorderTasksDto
 
 
 class TasksService:
@@ -44,9 +44,9 @@ class TasksService:
 
         return "created"
 
-    def modify(self, modify_task_Dto: ModifyDto):
+    def modify(self, modify_task_dto: ModifyDto):
         # 1- check that task does exist
-        is_task = self.getOneUserTask(modify_task_Dto.task_id)
+        is_task = self.getOneUserTask(modify_task_dto.task_id)
 
         if not bool(is_task):
             raise HTTPException(status_code=404, detail="task not found")
@@ -54,10 +54,10 @@ class TasksService:
         # update the record
         self.db.query(TaskModel).filter(
             and_(
-                TaskModel.id == modify_task_Dto.task_id,
+                TaskModel.id == modify_task_dto.task_id,
                 TaskModel.user_id == self.user_id,
             )
-        ).update({TaskModel.title: modify_task_Dto.title})
+        ).update({TaskModel.title: modify_task_dto.title})
         self.db.commit()
 
         return "updated"
@@ -79,6 +79,31 @@ class TasksService:
         self.db.commit()
 
         return "deleted"
+
+    def reorder(self, reorder_task_dto: ReorderTasksDto):
+        # 1- check that all task does exist
+        for task in reorder_task_dto.tasks:
+            is_task = self.getOneUserTask(task.id)
+            if not is_task:
+                raise HTTPException(
+                    status_code=404, detail=f"task {task.id}, not found"
+                )
+
+        # 2- update each task order_id
+        for task in reorder_task_dto.tasks:
+            # update the record
+            self.updateTaskOrder(task)
+
+        return "tasks reorder"
+
+    def updateTaskOrder(self, task):
+        self.db.query(TaskModel).filter(
+            and_(
+                TaskModel.id == task.id,
+                TaskModel.user_id == self.user_id,
+            )
+        ).update({TaskModel.order_id: task.order_id})
+        self.db.commit()
 
     def getOneUserTask(self, task_id):
         return (

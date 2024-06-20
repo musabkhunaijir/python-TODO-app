@@ -21,4 +21,4 @@ class TaskModel(Base):
     created_at = Column(TIMESTAMP(timezone=True), server_default=text("now()"))
     updated_at = Column(TIMESTAMP(timezone=True), server_default=text("now()"))
 
-    __table_args__ = (UniqueConstraint("user_id", "order_id", name="uix_1"),)
+    # __table_args__ = (UniqueConstraint("user_id", "order_id", name="uix_1"),)
