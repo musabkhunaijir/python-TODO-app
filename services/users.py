@@ -26,9 +26,8 @@ class UsersService:
             raise HTTPException(status_code=400, detail="user already exist")
 
         # 2- create user if it's new
-        # TODO: hash the password
-        hashed_pass = register_dto.password
-        # hashed_pass = hashPassword(register_dto.password)
+        hashed_pass = hashPassword(register_dto.password)
+
         db_user = UserModel(
             username=register_dto.username,
             email=register_dto.email,
@@ -46,17 +45,16 @@ class UsersService:
             .filter(
                 and_(
                     UserModel.username == login_dto.username,
-                    UserModel.password == login_dto.password,
                 )
             )
             .first()
         )
 
-        # isVerified = verifyPassword(
-        #     plain_password=login_dto.password, stored_password=is_user.password
-        # )
+        isVerified = verifyPassword(
+            plain_password=login_dto.password, stored_password=is_user.password
+        )
 
-        if not bool(is_user):
+        if not bool(isVerified):
             raise HTTPException(status_code=400, detail="invalid credentials")
 
         return "some-token"
